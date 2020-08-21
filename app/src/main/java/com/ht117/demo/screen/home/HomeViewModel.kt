@@ -5,6 +5,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ht117.demo.screen.base.IModel
+import com.ht117.demo.screen.base.updateState
 import com.ht117.domain.usecase.GetUser
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
@@ -34,14 +35,10 @@ class HomeViewModel(private val getUsers: GetUser): ViewModel(), IModel<HomeStat
 
     private fun fetchUsers() = viewModelScope.launch(Dispatchers.IO) {
         try {
-            updateState { it.copy(isLoading = true) }
-            updateState { it.copy(isLoading = false, users = getUsers.invoke()) }
+            updateState(_state, state) { it.copy(isLoading = true) }
+            updateState(_state, state) { it.copy(isLoading = false, users = getUsers.invoke()) }
         } catch (exp: Exception) {
-            updateState { it.copy(isLoading = false, message = exp.message) }
+            updateState(_state, state) { it.copy(isLoading = false, message = exp.message) }
         }
-    }
-
-    private suspend fun updateState(handler: suspend(intent: HomeState)-> HomeState) {
-        _state.postValue(handler(state.value!!))
     }
 }
